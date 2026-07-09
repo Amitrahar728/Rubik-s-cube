@@ -1,0 +1,414 @@
+import { ColoringContext } from '@/context';
+import { initialRubik } from '@/data';
+import type { Move, Rubik } from '@/domain';
+import { type Side, type Sides, type VisibleSide } from '@/domain';
+import { useColoring, useResponsiveCamera, useRubikAudio } from '@/hooks';
+import { encodeRubik, type Encoded } from '@/libs/encoder';
+import { RubikSolver } from '@/libs/RubikSolver';
+import { PresentationControlsNoInverse } from '@/libs/threejs-addons';
+import {
+  deepCopy,
+  doubleRequestAnimationFrame,
+  inverseObject,
+  isAnimating,
+} from '@/utils';
+import { Html, useContextBridge } from '@react-three/drei';
+import { useFrame } from '@react-three/fiber';
+import clsx from 'clsx';
+import jeasings from 'jeasings';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { type Group } from 'three';
+import { Controls, InfoModal, Navbar } from './components';
+import { moveToRotation, type Rotation } from './moveToRotation';
+import classes from './Rubik.module.css';
+import { RubikPiece, type PieceMesh } from './RubikPiece';
+
+const initialRubikCopy = deepCopy(initialRubik);
+const pieceSize = 0.75;
+const initialRotation = { y: Math.PI / 5, x: -Math.PI / 4 };
+const solvedEncodedRubik = RubikSolver.solvedEncoded;
+
+export function Rubik() {
+  const ContextProviders = useContextBridge(ColoringContext);
+  const { sideToColorMapRef } = useColoring();
+  const [isSolving, setIsSolving] = useState(false);
+  const [isMoving, setIsMoving] = useState(false);
+  const [hasColorsChanged, setHasColorsChanged] = useState(false);
+  const moveListRef = useRef<Move[]>([]);
+  const [currentSolution, setCurrentSolution] = useState<string | null>(null);
+  const [currentSolutionStepIndex, setCurrentSolutionStepIndex] = useState<
+    number | null
+  >(null);
+  const [isInvalid, setIsInvalid] = useState(false);
+  const [isSolved, setIsSolved] = useState(true);
+  const currentRotatedSolvedRubikRef = useRef<Rubik>(initialRubikCopy);
+  const [resetKey, setResetKey] = useState(0);
+  const { isMuted, playRotationAudio, toggleMute } = useRubikAudio();
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
+
+  const rotationGroupRef = useRef<Group>(null as unknown as Group);
+  const cubeGroupRef = useRef<Group>(null as unknown as Group);
+
+  useFrame(() => {
+    jeasings.update();
+  });
+
+  useResponsiveCamera();
+
+  function onSolve(solution: string | null, { swapMap }: Encoded) {
+    if (solution === null) {
+      setIsMoving(false);
+      setIsSolving(false);
+      setIsInvalid(true);
+      return;
+    }
+    doubleRequestAnimationFrame(() => {
+      setCurrentSolution(`- ${solution}`);
+      setCurrentSolutionStepIndex(1);
+      move(
+        solution.split(' ') as Move[],
+        () => {
+          const sideSwapInverseMap = inverseObject(swapMap!);
+          reset(sideSwapInverseMap);
+          setIsSolved(true);
+        },
+        () => {
+          setCurrentSolutionStepIndex((i) => i! + 1);
+        }
+      );
+    });
+  }
+
+  useEffect(() => {
+    RubikSolver.initSolver(onSolve);
+    return () => RubikSolver.worker.terminate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const removeSolutionSteps = useCallback(() => {
+    setCurrentSolution(null);
+    setCurrentSolutionStepIndex(null);
+  }, []);
+
+  const getPieceMeshes = () => {
+    return cubeGroupRef.current.children
+      .toSorted((meshA, meshB) => Number(meshA.name) - Number(meshB.name))
+      .map((m) => m.children.slice(1)) as PieceMesh[][];
+  };
+
+  const getSides = () => {
+    const sides = getPieceMeshes().map(
+      (ms) => ms.map((m) => m.material.name) as Sides
+    );
+    return sides;
+  };
+
+  function shuffle() {
+    removeSolutionSteps();
+
+    const shuffledSides = RubikSolver.shuffle();
+    const sideToColorMap = sideToColorMapRef.current;
+
+    getPieceMeshes().forEach((c, index) =>
+      c.forEach((m, innerIndex) => {
+        if (m.material.name === '-') return;
+
+        const name = shuffledSides[index][innerIndex];
+        const side = name[0] as Side;
+        const color = sideToColorMap[side];
+        m.material.name = name;
+        m.material.color.setStyle(color);
+      })
+    );
+    checkRubikStatus();
+    setIsSolved(false);
+  }
+
+  function resetCubeGroup(): void {
+    const rotationGroup = rotationGroupRef.current;
+    const cubeGroup = cubeGroupRef.current;
+
+    [...rotationGroup.children].forEach((c) => {
+      cubeGroup.attach(c);
+    });
+    rotationGroup.quaternion.set(0, 0, 0, 1);
+  }
+
+  function attachToRotationGroup({ axis, limit }: Rotation): void {
+    const rotationGroup = rotationGroupRef.current;
+    const cubeGroup = cubeGroupRef.current;
+
+    [...cubeGroup.children]
+      .filter((c) => {
+        return limit < 0 ? c.position[axis] < limit : c.position[axis] > limit;
+      })
+      .forEach((c) => {
+        rotationGroup.attach(c);
+      });
+  }
+
+  function getRotationAnimationEasing({ axis, multiplier }: Rotation) {
+    const rotationGroup = rotationGroupRef.current;
+
+    return new jeasings.JEasing(rotationGroup.rotation)
+      .to(
+        {
+          [axis]: rotationGroup.rotation[axis] + (Math.PI / 2) * multiplier,
+        },
+        250 * (Math.abs(multiplier) + (Math.abs(multiplier) - 1) * 0.1)
+      )
+      .easing(jeasings.Cubic.InOut);
+  }
+
+  const checkRubikStatus = useCallback(() => {
+    const sides = getSides();
+
+    const { cube: encodedRubik, unorderedEncoded: unorderedEncodedRubik } =
+      encodeRubik(sides) ?? {};
+
+    if (encodedRubik == null) {
+      setIsInvalid(true);
+      setHasColorsChanged(true);
+      return;
+    }
+
+    const cube = RubikSolver.fromString(encodedRubik);
+    const movedCube = RubikSolver.move(cube, moveListRef.current);
+
+    setIsSolved(movedCube === solvedEncodedRubik);
+
+    setIsInvalid(false);
+    setHasColorsChanged(solvedEncodedRubik !== unorderedEncodedRubik);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const move = (
+    moves: Move[],
+    onComplete?: VoidFunction,
+    onEach?: (index: number) => void
+  ) => {
+    if (isMoving || isAnimating()) return;
+    setIsMoving(true);
+    const rotations = moves.map((moveName) => moveToRotation(moveName));
+
+    resetCubeGroup();
+    attachToRotationGroup(rotations[0]);
+    const [first] = rotations
+      .map((rotation) => ({
+        animation: getRotationAnimationEasing(rotation),
+        rotation,
+      }))
+      .map(({ animation, rotation }, index, mappedRotations) => {
+        const next = mappedRotations[index + 1];
+        if (next) {
+          animation.onComplete(() => {
+            resetCubeGroup();
+            playRotationAudio(Math.abs(rotation.multiplier));
+            // WRONG not everytime
+            onEach?.(index);
+            attachToRotationGroup(next.rotation);
+          });
+          animation.chain(next.animation);
+        } else {
+          animation.onComplete(() => {
+            setIsMoving(false);
+            setIsSolving(false);
+            setIsSolved(true);
+            resetCubeGroup();
+            if (onComplete) onComplete();
+          });
+        }
+        return animation;
+      });
+    playRotationAudio(Math.abs(rotations[0].multiplier));
+    first.start();
+  };
+
+  const addToMoveList = (moves: Move[]) => {
+    const newList = moveListRef.current.concat(moves);
+    const currentCube = solvedEncodedRubik;
+    const movedCube = RubikSolver.move(currentCube, newList);
+    if (movedCube === solvedEncodedRubik) {
+      moveListRef.current = [];
+    } else moveListRef.current = newList;
+  };
+
+  const clientMove = (
+    moves: Move[],
+    onComplete?: VoidFunction,
+    onEach?: (index: number) => void
+  ) => {
+    if (isSolving || isAnimating()) return;
+
+    removeSolutionSteps();
+    //NOTE some moves lead to resetting solving the rubik
+    addToMoveList(moves);
+
+    move(
+      moves,
+      () => {
+        checkRubikStatus();
+        onComplete?.();
+      },
+      onEach
+    );
+  };
+
+  function solve() {
+    if (isSolving || isSolved) return;
+
+    const sides = getSides();
+
+    const {
+      cube: encodedRubik,
+      swapMap,
+      unorderedEncoded,
+    } = encodeRubik(sides) ?? {};
+
+    if (encodedRubik == null) {
+      setIsInvalid(true);
+      return;
+    }
+
+    setIsInvalid(false);
+    const cube = RubikSolver.fromString(encodedRubik);
+    const movedCube = RubikSolver.move(cube, moveListRef.current);
+    setIsMoving(true);
+    setIsSolving(true);
+
+    RubikSolver.solve({
+      swapMap: swapMap!,
+      unorderedEncoded: unorderedEncoded!,
+      cube: movedCube,
+    });
+  }
+
+  function gotoSolutionMove(index: number) {
+    if (
+      !currentSolution ||
+      currentSolutionStepIndex == null ||
+      index === currentSolutionStepIndex
+    )
+      return;
+    const solutionMoves = currentSolution.split(' ');
+
+    if (currentSolutionStepIndex > index) {
+      const moves = solutionMoves.slice(
+        index + 1,
+        currentSolutionStepIndex + 1
+      );
+      const inverse = RubikSolver.inverse(moves.join(' ')).split(' ') as Move[];
+      setCurrentSolutionStepIndex(currentSolutionStepIndex - 1);
+      move(
+        inverse,
+        () => {
+          checkRubikStatus();
+        },
+        () => {
+          setCurrentSolutionStepIndex((i) => i! - 1);
+        }
+      );
+    } else {
+      const moves = solutionMoves.slice(
+        currentSolutionStepIndex + 1,
+        index + 1
+      ) as Move[];
+
+      setCurrentSolutionStepIndex(currentSolutionStepIndex + 1);
+      move(
+        moves,
+        () => {
+          checkRubikStatus();
+        },
+        () => {
+          setCurrentSolutionStepIndex((i) => i! + 1);
+        }
+      );
+    }
+
+    const toSolution = solutionMoves.slice(index + 1).join(' ');
+
+    const inverted =
+      toSolution === ''
+        ? []
+        : RubikSolver.inverse(toSolution.split(' ').join(' ')).split(' ');
+    moveListRef.current = inverted as Move[];
+  }
+
+  function reset(swapMap?: Record<VisibleSide, VisibleSide>) {
+    if (!swapMap) removeSolutionSteps();
+
+    initialRubik
+      .map((s) => s.sides)
+      .forEach((sides, i) => {
+        const newSides = sides.map((name) => {
+          if (name === '-') return '-';
+          const newSide = swapMap ? swapMap[name[0] as VisibleSide] : name[0];
+          const newIndex = name[1];
+          const newName = `${newSide}${newIndex}`;
+          return newName;
+        }) as Sides;
+        currentRotatedSolvedRubikRef.current[i].sides = newSides;
+      });
+
+    setIsSolved(true);
+    setResetKey((count) => count + 1);
+
+    moveListRef.current = [];
+  }
+
+  return (
+    <>
+      <Html fullscreen className={clsx({ [classes.html]: isInfoOpen })}>
+        <ContextProviders>
+          <Navbar
+            setIsInfoOpen={setIsInfoOpen}
+            isMuted={isMuted}
+            toggleMute={toggleMute}
+            shuffle={shuffle}
+            isRubikInvalid={isInvalid}
+            reset={reset}
+            hasColorsChanged={hasColorsChanged}
+            isSolved={isSolved}
+            isSolving={isSolving}
+            solve={solve}
+          />
+          <Controls
+            isSolving={isSolving}
+            gotoSolutionMove={gotoSolutionMove}
+            solutionIndex={currentSolutionStepIndex}
+            solution={currentSolution}
+            isMoving={isMoving}
+            move={clientMove}
+          />
+          <InfoModal isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} />
+        </ContextProviders>
+      </Html>
+      <group position={[0, 0.3, 0]}>
+        <PresentationControlsNoInverse
+          global
+          enabled={!isInfoOpen}
+          speed={2}
+          rotation={[initialRotation.y, initialRotation.x, 0]}
+          polar={[-Infinity - initialRotation.y, Infinity - initialRotation.y]}
+          azimuth={[-Infinity, Infinity]}
+        >
+          <group ref={rotationGroupRef} />
+          <group ref={cubeGroupRef} key={resetKey}>
+            {currentRotatedSolvedRubikRef.current.map((cube, index) => (
+              <RubikPiece
+                removeSolutionSteps={removeSolutionSteps}
+                checkIsColored={checkRubikStatus}
+                index={index}
+                key={index}
+                position={cube.position}
+                sides={cube.sides}
+                pieceSize={pieceSize}
+              />
+            ))}
+          </group>
+        </PresentationControlsNoInverse>
+      </group>
+    </>
+  );
+}

@@ -1,0 +1,42 @@
+.button {
+  border: 1px solid #c4c4c4;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 25px;
+  height: 48px;
+  font-size: 1.1rem;
+  position: relative;
+  font-weight: 600;
+  opacity: 0.6;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  font-weight: 900;
+}
+
+.button:hover {
+  opacity: 1;
+}
+
+.button:active {
+  opacity: 1;
+  background-color: #ffffff49;
+}
+.squared {
+  padding: 0;
+  width: 48px;
+  height: 48px;
+}
+
+.button:disabled,
+.button:disabled:hover {
+  opacity: 0.4;
+  background-color: #ffffff3f;
+  color: #969696;
+}
+
+.circle {
+  border-radius: 999px;
+}

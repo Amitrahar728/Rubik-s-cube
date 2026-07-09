@@ -1,0 +1,62 @@
+.container {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  bottom: 0;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.controls {
+  height: 104px;
+  width: 100%;
+  display: grid;
+  justify-content: center;
+  align-items: center;
+  grid-template-columns: repeat(6, minmax(0, auto));
+  grid-template-rows: 1fr 1fr;
+  grid-gap: 8px;
+}
+
+.solutionViewer {
+  cursor: auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  row-gap: 5px;
+}
+
+.solutionMove {
+  display: flex;
+  align-items: center;
+  color: #ffffff27;
+  font-size: 15px;
+  cursor: pointer;
+  font-weight: 900;
+  font-family: inherit;
+}
+
+.solutionMoveKey {
+  flex-grow: 1;
+  color: #ffffff27;
+  padding: 0 5px;
+  transition: color 0.3s ease;
+  background-color: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-weight: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.solutionMove:not(:disabled):hover .solutionMoveKey {
+  color: rgba(220, 220, 220, 0.469);
+}
+
+.solutionMove.active .solutionMoveKey {
+  color: #ffffffa9;
+}
