@@ -2,7 +2,7 @@
 
 A modern monorepo restructuring of the 3D Rubik's Cube solver application. This project divides the codebase into a modular architecture powered by **Turborepo** as the build orchestrator and **pnpm** as the package manager.
 
-The core solver uses a high-performance C++ implementation of **Herbert Kociemba's Two-Phase algorithm**, which runs as a persistent background process bridged by a local Node.js Express server to communicate with the React-based 3D frontend.
+The core solver uses a high-performance C++ implementation of **Herbert Kociemba's Two-Phase algorithm**, which runs as a persistent background process bridged by local Node.js Express server to communicate with the React-based 3D frontend.
 
 ---
 
