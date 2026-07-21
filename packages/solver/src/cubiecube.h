@@ -5,6 +5,10 @@
 
 struct CubieCube;
 
+
+// two different methods for describing exact same cube type 
+// ye pehla type h jo dikhata h input or output kaisa hoga 
+
 struct FaceCube {
     Color f[54];
 
@@ -13,6 +17,7 @@ struct FaceCube {
     CubieCube toCubieCube() const;
 };
 
+// math language jo code ko chahiye 8 corners + 12 edges each with a slot and twist 
 struct CubieCube {
     Corner cp[8];
     int8_t co[8];

@@ -59,7 +59,45 @@ Here comes the Group theory :
 G0 : iss group m sab moves possible hai (4.3*10^19)
 G1 : iss group m only U , D k sabhi moves or R, L , F ,B k moves 180 degree bss tohh ye bohot chota hojata h
 kitne chota :
-total = 
+as 3^7 and 2^11 become 1 only that means all orientations are same 
+and as middle slice edges are sitting in same order that means instead of 12! it is 8!* 4! 
+total = results in 19*10^9 only 
+
+
+once you are in G1 state which is when :
+
+
+Every corner is correctly oriented (no twist) — your co[] array is all zeros.
+Every edge is correctly oriented (no flip) — your eo[] array is all zeros.
+The 4 middle-slice edges (FR, FL, BL, BR) are sitting somewhere in the middle layer (order doesn't matter yet, just that they're there).
+
+FR FL BL BR = front right front left aise vale 
+
+
+Folder structure of Solver part :
+Enums.h : Name diya h sab corner edges faces ko 
+
+cubiecube.h : defined corner permutation and orientation and for edge orientations and permutations 
+
+
+cubiecube.cpp : ye change krta h cp/co or edges vale ko array indexes m instead of cube state 
+
+coordcube.h : Build tow tables (given coordinate + a move find what the new coordinate) and pruning table (there is given coordinate gives us minimum steps to zero it out)
+
+Search.h/cpp : The actual IDA* search : Solution() does phase 1, totaldepth() function does phase 2
+
+main.cpp: reads 54 letter input , call the search.cpp and print moves 
+
+
+
+# ENUMS File 
+
+Yaha sirf indexes define kiye hai nothing else is defined 
+
+
+
+# CUBIE CUBE FILES:
+Cubiecube.h : this forms two structs side by side in human and machine form conversion other comments are in between the files 
 
 
 

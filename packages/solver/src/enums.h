@@ -2,9 +2,11 @@
 #include <string>
 #include <stdexcept>
 
+// yaha enum se indexes define krdiye bydefault 0 se hi start hota h everyone will get these indexes perfectly 
 enum Color {
     U = 0, R, F, D, L, B
 };
+
 
 inline const char ColorChar[6] = { 'U', 'R', 'F', 'D', 'L', 'B' };
 
@@ -29,14 +31,21 @@ enum Facelet {
     B1, B2, B3, B4, B5, B6, B7, B8, B9
 };
 
+
+// 8 corners of the cube jo ki permutations hai(matlb ki shi position pr nhi h)
 enum Corner {
     URF = 0, UFL, ULB, UBR, DFR, DLF, DBL, DRB
+    //and har index btata h which peice is currently at that place 
 };
+// jab shi hoga ye to cp[i] = i hoga
 
+// 12 edges hoti h jo ki shi jagha pr nhi ho shkti possible case 
 enum Edge {
     UR = 0, UF, UL, UB, DR, DF, DL, DB, FR, FL, BL, BR
 };
 
+
+// this shows  pair of corners at these positions
 const Facelet cornerFacelet[8][3] = {
     { U9, R1, F3 },
     { U7, F1, L3 },
@@ -47,6 +56,8 @@ const Facelet cornerFacelet[8][3] = {
     { D7, B9, L7 },
     { D9, R9, B7 }
 };
+
+// this shows the edges positions
 
 const Facelet edgeFacelet[12][2] = {
     { U6, R2 },
@@ -63,6 +74,7 @@ const Facelet edgeFacelet[12][2] = {
     { B4, R6 }
 };
 
+//this show ideal color we should have for having a complete cube
 const Color cornerColor[8][3] = {
     { U, R, F },
     { U, F, L },

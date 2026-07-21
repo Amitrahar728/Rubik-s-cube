@@ -16,6 +16,7 @@ int Cnk(int n, int k) {
 
 // ==========================================
 // FaceCube Implementation
+//  inke struct cubiecube m defined hai 
 // ==========================================
 
 FaceCube::FaceCube(const std::string& s) {
@@ -40,7 +41,7 @@ CubieCube FaceCube::toCubieCube() const {
     int ori;
     Color col1, col2;
     for (int i = 0; i < 8; i++) { // For each corner position
-        for (ori = 0; ori < 3; ori++) {
+        for(ori = 0; ori < 3; ori++) {
             if (f[cornerFacelet[i][ori]] == U || f[cornerFacelet[i][ori]] == D)
                 break;
         }
@@ -79,16 +80,22 @@ CubieCube FaceCube::toCubieCube() const {
 // ==========================================
 
 CubieCube::CubieCube() {
+    // yaha check ho rha h ki if all are at there perfect positions or they are not.
+    //cp_init correct vali hai or cp ye match krenge and dusri orientation hai 
+
     Corner cp_init[8] = { URF, UFL, ULB, UBR, DFR, DLF, DBL, DRB };
     for (int i = 0; i < 8; i++) {
         cp[i] = cp_init[i];
         co[i] = 0;
     }
+
+
     Edge ep_init[12] = { UR, UF, UL, UB, DR, DF, DL, DB, FR, FL, BL, BR };
     for (int i = 0; i < 12; i++) {
         ep[i] = ep_init[i];
         eo[i] = 0;
     }
+
 }
 
 CubieCube::CubieCube(const Corner cp_[8], const int8_t co_[8], const Edge ep_[12], const int8_t eo_[12]) {
@@ -658,6 +665,7 @@ int CubieCube::getURtoDF(int idx1, int idx2) {
 const CubieCube CubieCube::moveCube[6] = {
     // U move
     CubieCube(
+        // agar up move kiya 
         (const Corner[]){ UBR, URF, UFL, ULB, DFR, DLF, DBL, DRB },
         (const int8_t[]){ 0, 0, 0, 0, 0, 0, 0, 0 },
         (const Edge[]){ UB, UR, UF, UL, DR, DF, DL, DB, FR, FL, BL, BR },
