@@ -1,3 +1,4 @@
+
 import type { Side } from '@/domain';
 import React, { useMemo, useRef } from 'react';
 import { ColoringContext } from './ColoringContext';
