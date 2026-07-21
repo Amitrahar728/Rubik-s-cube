@@ -12,12 +12,12 @@ export function ColoringContextProvider({
 
   // TODO allow setting
   const sideToColorMapRef = useRef<Record<Side, string>>({
-    L: '#009922',
+    L: '#FFFFFF',
     B: '#EE6700',
     U: '#2255DD',
     R: '#CC0100',
     D: '#FFCC01',
-    F: '#FFFFFF',
+    F: '#009922',
     '-': '#000000',
   });
 

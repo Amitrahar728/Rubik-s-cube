@@ -1,8 +1,9 @@
-import { Move } from '@/domain';
+import { type Move, type Side } from '@/domain';
 import { ChevronRightIcon, CircleIcon } from '@/icons';
 import { Button } from '@/ui';
+import { useColoring } from '@/hooks';
 import clsx from 'clsx';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, type CSSProperties } from 'react';
 import classes from './Controls.module.css';
 import { keyToMoveSideMap } from './keyToMoveSideMap';
 
@@ -38,6 +39,9 @@ export function Controls({
   solutionIndex,
   gotoSolutionMove,
 }: Props) {
+  const { sideToColorMapRef } = useColoring();
+  const sideToColorMap = sideToColorMapRef.current;
+
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
       if (isMoving) return;
@@ -61,18 +65,30 @@ export function Controls({
   return (
     <div className={classes.container}>
       <div className={classes.controls}>
-        {moves.map((moveName) => (
-          <Button
-            square
-            disabled={isSolving}
-            key={moveName}
-            onClick={() => {
-              move([moveName]);
-            }}
-          >
-            {moveName}
-          </Button>
-        ))}
+        {moves.map((moveName) => {
+          const side = moveName[0] as Side;
+          const color = sideToColorMap[side];
+          const isPrime = moveName.endsWith("'");
+
+          return (
+            <Button
+              square
+              disabled={isSolving}
+              key={moveName}
+              onClick={() => {
+                move([moveName]);
+              }}
+              className={clsx(classes.controlBtn, {
+                [classes.prime]: isPrime,
+              })}
+              style={{
+                '--btn-color': color,
+              } as CSSProperties}
+            >
+              {moveName}
+            </Button>
+          );
+        })}
       </div>
 
       <div className={classes.solutionViewer}>

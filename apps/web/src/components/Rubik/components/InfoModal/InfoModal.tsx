@@ -1,5 +1,5 @@
 import { config } from '@/config';
-import { CloseIcon, CopyIcon, CubeIcon, GitHubIcon, HeartIcon } from '@/icons';
+import { CloseIcon, CubeIcon, GitHubIcon } from '@/icons';
 import { Button } from '@/ui';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
@@ -13,7 +13,6 @@ interface InfoModalProps {
 
 export const InfoModal = ({ isOpen, onClose }: InfoModalProps) => {
   const [isHoldingShift, setIsHoldingShift] = useState(false);
-  const [copiedAddress, setCopiedAddress] = useState(false);
 
   useEffect(() => {
     const onShiftDown = (e: KeyboardEvent) => {
@@ -35,15 +34,6 @@ export const InfoModal = ({ isOpen, onClose }: InfoModalProps) => {
     };
   }, [isHoldingShift, isOpen]);
 
-  const handleCopyAddress = async (): Promise<void> => {
-    try {
-      await navigator.clipboard.writeText(config.walletAddress);
-      setCopiedAddress(true);
-      setTimeout(() => setCopiedAddress(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy address:', err);
-    }
-  };
 
   if (!isOpen) return null;
 
@@ -142,36 +132,11 @@ export const InfoModal = ({ isOpen, onClose }: InfoModalProps) => {
                     GitHub Repository
                   </a>
                 </Button>
-
-                <Button
-                  onClick={handleCopyAddress}
-                  className={clsx(classes.supportLinkButton, {
-                    [classes.copied]: copiedAddress,
-                  })}
-                  title="Copy wallet address"
-                >
-                  <div className={classes.link}>
-                    <CopyIcon width={20} height={20} />
-                    <span>
-                      {copiedAddress
-                        ? 'Copied!'
-                        : `Donate: ${config.walletAddress.slice(
-                            0,
-                            6
-                          )}...${config.walletAddress.slice(-4)}`}
-                    </span>
-                  </div>
-                </Button>
               </div>
             </section>
 
             <div className={classes.footer}>
-              <span>Made with</span>
-              <HeartIcon
-                width={16}
-                height={16}
-                className={classes.footerIcon}
-              />
+              <span>Made by Amit</span>
             </div>
           </div>
         </div>

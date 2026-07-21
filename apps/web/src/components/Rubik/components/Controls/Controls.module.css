@@ -60,3 +60,39 @@
 .solutionMove.active .solutionMoveKey {
   color: #ffffffa9;
 }
+
+.controlBtn {
+  border-color: var(--btn-color, #c4c4c4) !important;
+  color: var(--btn-color, white) !important;
+  opacity: 0.8;
+  background-color: transparent;
+  transition: all 0.2s ease;
+}
+
+.controlBtn:hover:not(:disabled) {
+  opacity: 1;
+  filter: brightness(1.2);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.controlBtn:active:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.controlBtn.prime {
+  opacity: 0.35;
+}
+
+.controlBtn.prime:hover:not(:disabled) {
+  opacity: 0.9;
+  filter: brightness(1.2);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.controlBtn:disabled {
+  opacity: 0.2 !important;
+  border-color: #444444 !important;
+  color: #666666 !important;
+  background-color: transparent !important;
+}
+
