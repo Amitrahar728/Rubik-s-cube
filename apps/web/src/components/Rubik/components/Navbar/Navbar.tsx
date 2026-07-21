@@ -1,4 +1,4 @@
-import { InfoIcon, ResetIcon, VolumeIcon, VolumeOffIcon } from '@/icons';
+import { InfoIcon, ResetIcon } from '@/icons';
 import { Button, FuzzyText } from '@/ui';
 import clsx from 'clsx';
 import { useState } from 'react';
@@ -13,8 +13,6 @@ interface Props {
   reset: VoidFunction;
   isRubikInvalid: boolean;
   shuffle: VoidFunction;
-  isMuted: boolean;
-  toggleMute: VoidFunction;
   setIsInfoOpen: (isOpen: boolean) => void;
 }
 
@@ -26,8 +24,6 @@ export const Navbar = ({
   hasColorsChanged,
   isRubikInvalid,
   shuffle,
-  isMuted,
-  toggleMute,
   setIsInfoOpen,
 }: Props) => {
   const [isAnimatingReset, setIsAnimatingReset] = useState(false);
@@ -54,19 +50,6 @@ export const Navbar = ({
               onClick={() => setIsInfoOpen(true)}
             >
               <InfoIcon width={24} height={24} />
-            </Button>
-            <Button
-              circle
-              square
-              type="button"
-              title="Volume"
-              onClick={toggleMute}
-            >
-              {isMuted ? (
-                <VolumeOffIcon width={24} height={24} />
-              ) : (
-                <VolumeIcon width={24} height={24} />
-              )}
             </Button>
             <Palette isDisabled={isSolving} />
             <Button

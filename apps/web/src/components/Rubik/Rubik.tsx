@@ -2,7 +2,7 @@ import { ColoringContext } from '@/context';
 import { initialRubik } from '@/data';
 import type { Move, Rubik } from '@/domain';
 import { type Side, type Sides, type VisibleSide } from '@/domain';
-import { useColoring, useResponsiveCamera, useRubikAudio } from '@/hooks';
+import { useColoring, useResponsiveCamera } from '@/hooks';
 import { encodeRubik, type Encoded } from '@/libs/encoder';
 import { RubikSolver } from '@/libs/RubikSolver';
 import { PresentationControlsNoInverse } from '@/libs/threejs-addons';
@@ -43,7 +43,6 @@ export function Rubik() {
   const [isSolved, setIsSolved] = useState(true);
   const currentRotatedSolvedRubikRef = useRef<Rubik>(initialRubikCopy);
   const [resetKey, setResetKey] = useState(0);
-  const { isMuted, playRotationAudio, toggleMute } = useRubikAudio();
   const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   const rotationGroupRef = useRef<Group>(null as unknown as Group);
@@ -198,12 +197,11 @@ export function Rubik() {
         animation: getRotationAnimationEasing(rotation),
         rotation,
       }))
-      .map(({ animation, rotation }, index, mappedRotations) => {
+      .map(({ animation }, index, mappedRotations) => {
         const next = mappedRotations[index + 1];
         if (next) {
           animation.onComplete(() => {
             resetCubeGroup();
-            playRotationAudio(Math.abs(rotation.multiplier));
             // WRONG not everytime
             onEach?.(index);
             attachToRotationGroup(next.rotation);
@@ -220,7 +218,6 @@ export function Rubik() {
         }
         return animation;
       });
-    playRotationAudio(Math.abs(rotations[0].multiplier));
     first.start();
   };
 
@@ -363,8 +360,6 @@ export function Rubik() {
         <ContextProviders>
           <Navbar
             setIsInfoOpen={setIsInfoOpen}
-            isMuted={isMuted}
-            toggleMute={toggleMute}
             shuffle={shuffle}
             isRubikInvalid={isInvalid}
             reset={reset}

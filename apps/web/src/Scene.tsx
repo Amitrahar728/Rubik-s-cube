@@ -1,5 +1,4 @@
 import { Canvas } from '@react-three/fiber';
-
 import { Rubik } from '@/components';
 import { ColoringContextProvider } from '@/context';
 import { canvasId } from './canvasId';
