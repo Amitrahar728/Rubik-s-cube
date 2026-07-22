@@ -28,6 +28,7 @@ const pieceSize = 0.75;
 const initialRotation = { y: Math.PI / 5, x: -Math.PI / 4 };
 const solvedEncodedRubik = RubikSolver.solvedEncoded;
 
+
 export function Rubik() {
   const ContextProviders = useContextBridge(ColoringContext);
   const { sideToColorMapRef } = useColoring();
