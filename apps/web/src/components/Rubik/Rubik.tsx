@@ -1,10 +1,12 @@
 import { ColoringContext } from '@/context';
-import { initialRubik } from '@/data';
-import type { Move, Rubik } from '@/domain';
+// this is used because 3fiber creates another react root inside canvas 
+
+import { initialRubik } from '@/data'; // cube at start 
+import type { Move, Rubik } from '@/domain';  // ye moves 
 import { type Side, type Sides, type VisibleSide } from '@/domain';
-import { useColoring, useResponsiveCamera } from '@/hooks';
-import { encodeRubik, type Encoded } from '@/libs/encoder';
-import { RubikSolver } from '@/libs/RubikSolver';
+import { useColoring, useResponsiveCamera } from '@/hooks'; // ye 2 custom hooks hai
+import { encodeRubik, type Encoded } from '@/libs/encoder'; // ye isliye kyunki backend meshes nhi samaj pata
+import { RubikSolver } from '@/libs/RubikSolver'; // backend ko json dene k liye 
 import { PresentationControlsNoInverse } from '@/libs/threejs-addons';
 import {
   deepCopy,
@@ -13,9 +15,9 @@ import {
   isAnimating,
 } from '@/utils';
 import { Html, useContextBridge } from '@react-three/drei';
-import { useFrame } from '@react-three/fiber';
-import clsx from 'clsx';
-import jeasings from 'jeasings';
+import { useFrame } from '@react-three/fiber'; // this is in node_modules 
+import clsx from 'clsx'; //css classes
+import jeasings from 'jeasings'; // library for smooth animation
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { type Group } from 'three';
 import { Controls, InfoModal, Navbar } from './components';
@@ -25,7 +27,7 @@ import { RubikPiece, type PieceMesh } from './RubikPiece';
 
 const initialRubikCopy = deepCopy(initialRubik);
 const pieceSize = 0.75;
-const initialRotation = { y: Math.PI / 5, x: -Math.PI / 4 };
+const initialRotation = { y: Math.PI / 5, x: -Math.PI / 4 }; // start m face sidha na rhe 
 const solvedEncodedRubik = RubikSolver.solvedEncoded;
 
 
@@ -82,7 +84,6 @@ export function Rubik() {
   useEffect(() => {
     RubikSolver.initSolver(onSolve);
     return () => RubikSolver.worker.terminate();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const removeSolutionSteps = useCallback(() => {

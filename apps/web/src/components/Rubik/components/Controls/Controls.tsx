@@ -3,9 +3,8 @@ import { ChevronRightIcon, CircleIcon } from '@/icons';
 import { Button } from '@/ui';
 import { useColoring } from '@/hooks';
 import clsx from 'clsx';
-import { useCallback, useEffect, type CSSProperties } from 'react';
+import type { CSSProperties } from 'react';
 import classes from './Controls.module.css';
-import { keyToMoveSideMap } from './keyToMoveSideMap';
 
 interface Props {
   move: (m: Move[]) => void;
@@ -41,26 +40,6 @@ export function Controls({
 }: Props) {
   const { sideToColorMapRef } = useColoring();
   const sideToColorMap = sideToColorMapRef.current;
-
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent) => {
-      if (isMoving) return;
-      const key = event.key.toLowerCase();
-      if (!(key in keyToMoveSideMap)) return;
-
-      const moveSide = keyToMoveSideMap[key as keyof typeof keyToMoveSideMap];
-      const moveName = event.shiftKey ? (`${moveSide}'` as const) : moveSide;
-      move([moveName]);
-    },
-    [isMoving, move]
-  );
-
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isMoving, handleKeyDown]);
 
   return (
     <div className={classes.container}>

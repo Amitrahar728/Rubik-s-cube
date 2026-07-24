@@ -1,5 +1,4 @@
 import { initialRubik } from '@/data';
-
 import { orderedSides, type Sides, type VisibleSide } from '@/domain';
 import { indexedSides } from './indexedSides';
 import { isEncodedRubikValid } from './isEncodedRubikValid';
@@ -10,6 +9,7 @@ const sidesIndexMap = indexedSides.map((s) =>
     [-1, -1]
   )
 );
+
 
 export function encodeRubikUnordered(sides: Sides[]) {
   return sidesIndexMap

@@ -1,5 +1,5 @@
 import type { Rubik } from '@/domain';
-
+// initial state of cube ( poori 27 enteries )
 export const initialRubik: Rubik = [
   { position: { x: 0, y: 0, z: 0 }, sides: ['-', '-', '-', '-', '-', '-'] },
   { position: { x: 0, y: 1, z: 0 }, sides: ['-', '-', 'U4', '-', '-', '-'] },
@@ -66,7 +66,7 @@ export const initialRubik: Rubik = [
     sides: ['-', 'L3', '-', '-', '-', 'B5'],
   },
   {
-    position: { x: 1, y: 1, z: 1 },
+    position: { x: 1, y: 1, z: 1 },  // front
     sides: ['R0', '-', 'U8', '-', 'F2', '-'],
   },
   {

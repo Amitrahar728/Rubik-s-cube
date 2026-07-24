@@ -4,6 +4,8 @@ import { ColoringContextProvider } from '@/context';
 import { canvasId } from './canvasId';
 import classes from './Scene.module.css';
 
+
+
 export function Scene() {
   return (
     <div className={classes.scene}>
@@ -15,3 +17,4 @@ export function Scene() {
     </div>
   );
 }
+

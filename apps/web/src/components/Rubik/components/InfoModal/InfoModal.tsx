@@ -1,9 +1,6 @@
 import { config } from '@/config';
 import { CloseIcon, CubeIcon, GitHubIcon } from '@/icons';
 import { Button } from '@/ui';
-import clsx from 'clsx';
-import { useEffect, useState } from 'react';
-import { keyToMoveSideMap } from '../Controls';
 import classes from './InfoModal.module.css';
 
 interface InfoModalProps {
@@ -12,29 +9,6 @@ interface InfoModalProps {
 }
 
 export const InfoModal = ({ isOpen, onClose }: InfoModalProps) => {
-  const [isHoldingShift, setIsHoldingShift] = useState(false);
-
-  useEffect(() => {
-    const onShiftDown = (e: KeyboardEvent) => {
-      if (e.shiftKey && isOpen) setIsHoldingShift(true);
-    };
-
-    const onShiftUp = (e: KeyboardEvent) => {
-      if (!e.shiftKey && isOpen) setIsHoldingShift(false);
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', onShiftDown);
-      document.addEventListener('keyup', onShiftUp);
-    }
-
-    return () => {
-      document.removeEventListener('keydown', onShiftDown);
-      document.removeEventListener('keyup', onShiftUp);
-    };
-  }, [isHoldingShift, isOpen]);
-
-
   if (!isOpen) return null;
 
   return (
@@ -89,33 +63,6 @@ export const InfoModal = ({ isOpen, onClose }: InfoModalProps) => {
                   <li>Real-time validation</li>
                 </div>
               </ul>
-            </section>
-
-            <section className={classes.section}>
-              <h2 className={classes.sectionTitle}>Keyboard Controls</h2>
-              <div className={classes.controlsList}>
-                <div className={classes.controlGroup}>
-                  <div className={classes.movesList}>
-                    {Object.entries(keyToMoveSideMap).map(([key, side]) => (
-                      <div key={key} className={classes.moveItem}>
-                        <kbd>{key.toUpperCase()}</kbd>
-                        <span>→</span>
-                        <span className={classes.sideName}>
-                          {side}
-                          {isHoldingShift ? "'" : null}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  <p
-                    className={clsx(classes.shiftNote, {
-                      [classes.holdingShift]: isHoldingShift,
-                    })}
-                  >
-                    Hold <kbd>Shift</kbd> for reverse rotation
-                  </p>
-                </div>
-              </div>
             </section>
 
             <section className={classes.section}>

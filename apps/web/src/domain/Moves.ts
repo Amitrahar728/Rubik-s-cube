@@ -1,10 +1,6 @@
+// typescript union ( kaam se kaam ek or inhi m se koi move)
 export type Move =
-  | 'U'
-  | 'D'
-  | 'R'
-  | 'L'
-  | 'F'
-  | 'B'
+  | 'U' | 'D' | 'R' | 'L' | 'F' | 'B'
   | "U'"
   | "D'"
   | "R'"
@@ -18,6 +14,7 @@ export type Move =
   | 'F2'
   | 'B2';
 
+// object move
 export const Move = {
   Up: 'U',
   Down: 'D',
